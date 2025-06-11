@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>File Upload System</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        min-height: 100vh;
+        padding: 2rem;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      h2,
+      h3 {
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-weight: 600;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding: 2rem;
+        border: 2px dashed #c3cfe2;
+        border-radius: 12px;
+        background: #f8fafc;
+        transition: border-color 0.3s ease;
+      }
+
+      form:hover {
+        border-color: #2196f3;
+      }
+
+      input[type="file"] {
+        display: none;
+      }
+
+      .file-label {
+        padding: 12px 24px;
+        background: #4caf50;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .file-label:hover {
+        background: #45a049;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(76, 175, 80, 0.3);
+      }
+
+      .upload-btn {
+        padding: 12px 30px;
+        background: #2196f3;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        font-size: 1rem;
+      }
+
+      .upload-btn:hover {
+        background: #1976d2;
+        transform: translateY(-2px);
+        box-shadow: 0 3px 10px rgba(33, 150, 243, 0.3);
+      }
+
+      .preview-container {
+        width: 100%;
+        max-width: 400px;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .preview-image {
+        max-width: 100%;
+        max-height: 300px;
+        margin: 0 auto;
+        display: block;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        cursor: zoom-in;
+      }
+
+      .file-list {
+        margin: 20px 0;
+      }
+
+      .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        margin-bottom: 12px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        border: 1px solid #eee;
+      }
+
+      .file-item:hover {
+        transform: translateX(5px);
+        background: white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .file-name {
+        flex: 1;
+        font-size: 0.95rem;
+        color: #2c3e50;
+      }
+
+      .file-actions {
+        display: flex;
+        gap: 12px;
+      }
+
+      .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .download-btn {
+        background: #4caf50;
+        color: white;
+      }
+
+      .delete-btn {
+        background: #f44336;
+        color: white;
+      }
+
+      .btn:hover {
+        opacity: 0.9;
+        transform: translateY(-2px);
+      }
+
+      .file-info {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 8px;
+        color: #666;
+        font-size: 0.9rem;
+        text-align: center;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 1rem;
+        }
+
+        .file-item {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .file-actions {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+
+      /* Modal Zoom */
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(0, 0, 0, 0.85);
+        display: none;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        max-width: 90%;
+        max-height: 90%;
+      }
+
+      .modal-content img,
+      .modal-content embed {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      }
+
+      .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 2rem;
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>File Upload System</h2>
+      <form action="upload.php" method="post" enctype="multipart/form-data">
+        <label for="fileToUpload" class="file-label"> Pilih File </label>
+        <input type="file" name="fileToUpload" id="fileToUpload" onchange="previewFile()" />
+        <div class="preview-container">
+          <div id="preview"></div>
+        </div>
+        <button type="submit" name="submit" class="upload-btn">Upload File</button>
+      </form>
+
+      <div class="file-list">
+        <h3>Daftar File</h3>
+        <div id="fileList"></div>
+      </div>
+    </div>
+
+    <!-- Modal Zoom -->
+    <div id="zoomModal" class="modal-overlay" onclick="closeZoom()">
+      <span class="modal-close">&times;</span>
+      <div class="modal-content" id="zoomContent"></div>
+    </div>
+
+    <script>
+      function previewFile() {
+        const preview = document.getElementById("preview");
+        const file = document.querySelector("input[type=file]").files[0];
+        const reader = new FileReader();
+
+        reader.onloadend = function () {
+          if (file.type.startsWith("image/")) {
+            preview.innerHTML = `<img src="${reader.result}" class="preview-image" onclick="openZoomImage('${reader.result}')">`;
+          } else if (file.type === "application/pdf") {
+            preview.innerHTML = `<embed src="${reader.result}" type="application/pdf" width="100%" height="400px" style="border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: zoom-in;" onclick="openZoomPDF('${reader.result}')" />`;
+          } else {
+            preview.innerHTML = `
+              <div class="file-info">
+                <strong>${file.name}</strong><br>
+                Tipe: ${file.type || "tidak diketahui"}<br>
+                Ukuran: ${(file.size / 1024).toFixed(2)} KB
+              </div>`;
+          }
+        };
+
+        if (file) {
+          reader.readAsDataURL(file);
+        } else {
+          preview.innerHTML = "";
+        }
+      }
+
+      function openZoomImage(src) {
+        document.getElementById("zoomContent").innerHTML = `<img src="${src}">`;
+        document.getElementById("zoomModal").style.display = "flex";
+      }
+
+      function openZoomPDF(src) {
+        document.getElementById("zoomContent").innerHTML = `<embed src="${src}" type="application/pdf" width="100%" height="100%">`;
+        document.getElementById("zoomModal").style.display = "flex";
+      }
+
+      function closeZoom() {
+        document.getElementById("zoomModal").style.display = "none";
+        document.getElementById("zoomContent").innerHTML = "";
+      }
+
+      // Load file list
+      fetch("list_file.php")
+        .then((res) => res.json())
+        .then((files) => {
+          const fileList = document.getElementById("fileList");
+          if (files.length === 0) {
+            fileList.innerHTML = "<p>Tidak ada file yang diunggah.</p>";
+            return;
+          }
+
+          files.forEach((file) => {
+            const item = document.createElement("div");
+            item.className = "file-item";
+
+            item.innerHTML = `
+              <div class="file-name">${file}</div>
+              <div class="file-actions">
+                <a class="btn download-btn" href="uploads/${file}" download>Download</a>
+                <button class="btn delete-btn" onclick="deleteFile('${file}')">Hapus</button>
+              </div>
+            `;
+
+            fileList.appendChild(item);
+          });
+        });
+
+      function deleteFile(fileName) {
+        if (confirm("Yakin ingin menghapus file: " + fileName + "?")) {
+          fetch("delete_file.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fileName: fileName }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              alert(data.message);
+              location.reload();
+            });
+        }
+      }
+    </script>
+  </body>
+</html>
